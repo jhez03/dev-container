@@ -29,6 +29,9 @@ RUN ln -s "$(command -v fdfind)" /usr/local/bin/fd || true
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
     && apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
 
+# --- Claude Code CLI (drives claudecode.nvim's :ClaudeCode commands) -----------
+RUN npm install -g @anthropic-ai/claude-code
+
 # --- Neovim (latest stable release tarball) ---------
 RUN curl -fsSL https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz \
       -o /tmp/nvim.tar.gz \
