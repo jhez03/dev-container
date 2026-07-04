@@ -13,6 +13,10 @@ separate [dotfiles](../dotfiles) repo cloned at image build time.
    ```bash
    cp .env.example .env      # edit DOTFILES_REPO and PROJECTS_DIR
    ```
+   Also set `USER_UID`/`USER_GID` in `.env` to match this host (`id -u`, `id -g`) —
+   keeps the container's `dev` user aligned with your host user so bind-mounted
+   `/workspace` files don't end up with mismatched ownership. Defaults to 1000/1000
+   if you skip this, which covers most single-user Linux/WSL hosts.
 3. Create `~/.gitconfig.local` on the host with just your identity (and any
    host-specific `safe.directory` entries) — the shared, non-identifying git
    settings already live in `dotfiles/git/gitconfig` and get symlinked in:
@@ -58,3 +62,8 @@ docker compose build && docker compose up -d
   avoid re-auth on rebuild, uncomment the `github-copilot` mount in `docker-compose.yml`.
 - **Architecture**: image assumes x86_64 (correct for WSL2 on Windows). For ARM, swap the
   `nvim`/`lazygit` asset names in the `Dockerfile`.
+- **Workspace permissions**: `/workspace` is a straight bind mount, so file ownership is
+  shared with the host. Avoid `docker exec -u root ...` (or anything else that writes to
+  `/workspace` as root) — it leaves files owned by root on your actual host filesystem,
+  causing "permission denied" until you `chown -R dev:dev` them back. Keep `USER_UID`/
+  `USER_GID` matched to your host user (see setup step 2) to prevent mismatches entirely.

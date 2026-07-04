@@ -5,6 +5,8 @@ services:
       args:
         DOTFILES_REPO: ${DOTFILES_REPO}
         DOTFILES_REF: ${DOTFILES_REF:-main}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
     image: my-devbox:latest
     command: sleep infinity # keep the container alive so we can exec in
     working_dir: /workspace

@@ -6,6 +6,12 @@ FROM debian:trixie-slim
 ARG DOTFILES_REPO=https://github.com/jhez03/dotfiles.git
 ARG USERNAME=dev
 ARG NODE_MAJOR=22
+# Match the host user's uid/gid so bind-mounted /workspace stays writable
+# without manual chown. Defaults to 1000 (the common first-user uid); run
+# `id -u`/`id -g` on the host and override via USER_UID/USER_GID in .env if
+# your host user differs.
+ARG USER_UID=1000
+ARG USER_GID=1000
 
 # --- base tooling --------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -41,7 +47,8 @@ RUN LG_VER=$(curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/relea
 # RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install djlint
 
 # --- non-root user -------------------------------------------------------------
-RUN useradd -ms /bin/bash ${USERNAME}
+RUN groupadd -g ${USER_GID} ${USERNAME} \
+    && useradd -u ${USER_UID} -g ${USER_GID} -ms /bin/bash ${USERNAME}
 USER ${USERNAME}
 ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 WORKDIR /home/${USERNAME}
