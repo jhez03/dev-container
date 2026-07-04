@@ -19,16 +19,14 @@ services:
       - nvim-data:/home/dev/.local/share/nvim
       - nvim-state:/home/dev/.local/state/nvim
 
-      # --- persist auth tokens (Copilot etc.) so you don't re-login on rebuild ---
-      - dev-config:/home/dev/.config
-
       # --- secrets / auth, mounted read-only (never baked into the image) ---
       - ${HOME}/.gitconfig:/home/dev/.gitconfig:ro
       - ${HOME}/.ssh:/home/dev/.ssh:ro
-      # intelephense license (kept out of the dotfiles repo):
-      - ${HOME}/.intelephense:/home/dev/.intelephense:ro
+      # intelephense license — lsp.lua reads ~/.config/intelephense/license.txt at runtime:
+      - ${HOME}/.config/intelephense:/home/dev/.config/intelephense:ro
+      # Optional: share your Copilot auth so you don't re-login (uncomment if it exists on host):
+      # - ${HOME}/.config/github-copilot:/home/dev/.config/github-copilot
 
 volumes:
   nvim-data:
   nvim-state:
-  dev-config:

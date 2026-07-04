@@ -42,8 +42,9 @@ docker compose build && docker compose up -d
 - **Clipboard**: yanks reach the host via OSC52 (nvim ≥0.10). If copy/paste to Windows
   doesn't work, enable an OSC52 clipboard provider in `nvim/lua/config/options.lua`.
 - **Colors look off?** Add `set -ga terminal-overrides ",*:Tc"` to your `tmux.conf`.
-- **Auth**: `~/.gitconfig`, `~/.ssh`, and `~/.intelephense` are mounted read-only. Copilot/
-  Claude Code: authenticate once inside the container (tokens persist in the `dev-config`
-  volume). If you restructure config paths, remove that volume: `docker volume rm dev-container_dev-config`.
+- **Auth**: `~/.gitconfig`, `~/.ssh`, and `~/.config/intelephense` (your license) are mounted
+  read-only. Copilot/Claude Code: authenticate once inside the container via the terminal
+  device-code flow. To avoid re-auth on rebuild, uncomment the `github-copilot` mount in
+  `docker-compose.yml`.
 - **Architecture**: image assumes x86_64 (correct for WSL2 on Windows). For ARM, swap the
   `nvim`/`lazygit` asset names in the `Dockerfile`.
