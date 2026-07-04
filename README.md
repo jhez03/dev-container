@@ -13,7 +13,15 @@ separate [dotfiles](../dotfiles) repo cloned at image build time.
    ```bash
    cp .env.example .env      # edit DOTFILES_REPO and PROJECTS_DIR
    ```
-3. Build the image (clones dotfiles, installs plugins + LSPs):
+3. Create `~/.gitconfig.local` on the host with just your identity (and any
+   host-specific `safe.directory` entries) — the shared, non-identifying git
+   settings already live in `dotfiles/git/gitconfig` and get symlinked in:
+   ```gitconfig
+   [user]
+       name = Your Name
+       email = you@example.com
+   ```
+4. Build the image (clones dotfiles, installs plugins + LSPs):
    ```bash
    docker compose build
    ```
@@ -42,9 +50,11 @@ docker compose build && docker compose up -d
 - **Clipboard**: yanks reach the host via OSC52 (nvim ≥0.10). If copy/paste to Windows
   doesn't work, enable an OSC52 clipboard provider in `nvim/lua/config/options.lua`.
 - **Colors look off?** Add `set -ga terminal-overrides ",*:Tc"` to your `tmux.conf`.
-- **Auth**: `~/.gitconfig`, `~/.ssh`, and `~/.config/intelephense` (your license) are mounted
-  read-only. Copilot/Claude Code: authenticate once inside the container via the terminal
-  device-code flow. To avoid re-auth on rebuild, uncomment the `github-copilot` mount in
-  `docker-compose.yml`.
+- **Auth**: `~/.ssh` and `~/.config/intelephense` (your license) are mounted read-only.
+  `~/.gitconfig` itself comes from `dotfiles/git/gitconfig` (symlinked at build time);
+  only your identity/host-specific overrides come from the host, via
+  `~/.gitconfig.local` (mounted read-only, gitignored, never committed). Copilot/Claude
+  Code: authenticate once inside the container via the terminal device-code flow. To
+  avoid re-auth on rebuild, uncomment the `github-copilot` mount in `docker-compose.yml`.
 - **Architecture**: image assumes x86_64 (correct for WSL2 on Windows). For ARM, swap the
   `nvim`/`lazygit` asset names in the `Dockerfile`.

@@ -21,7 +21,9 @@ services:
       - nvim-undo:/home/dev/.vim/undodir
 
       # --- secrets / auth, mounted read-only (never baked into the image) ---
-      - ${HOME}/.gitconfig:/home/dev/.gitconfig:ro
+      # ~/.gitconfig itself is symlinked from dotfiles (shared, non-identifying
+      # settings). Only the identity/host-specific overrides live here.
+      - ${HOME}/.gitconfig.local:/home/dev/.gitconfig.local:ro
       - ${HOME}/.ssh:/home/dev/.ssh:ro
       # intelephense license — lsp.lua reads ~/.config/intelephense/license.txt at runtime:
       - ${HOME}/.config/intelephense:/home/dev/.config/intelephense:ro
