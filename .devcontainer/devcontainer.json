@@ -1,0 +1,9 @@
+{
+  // Wrapper so this is also a proper Dev Container (future VS Code / `devcontainer up`).
+  // Day-to-day you use plain `docker compose` (see README), but this keeps the door open.
+  "name": "devbox",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "dev"
+}
