@@ -6,10 +6,10 @@ services:
         DOTFILES_REPO: ${DOTFILES_REPO}
         DOTFILES_REF: ${DOTFILES_REF:-main}
     image: my-devbox:latest
-    command: sleep infinity            # keep the container alive so we can exec in
+    command: sleep infinity # keep the container alive so we can exec in
     working_dir: /workspace
     environment:
-      - TERM=${TERM:-tmux-256color}     # pass terminal type through for colors/keys
+      - TERM=${TERM:-tmux-256color} # pass terminal type through for colors/keys
       - COLORTERM=truecolor
     volumes:
       # --- your project code (set PROJECTS_DIR in .env) ---
@@ -18,15 +18,15 @@ services:
       # --- persist Neovim plugins + Mason binaries across rebuilds ---
       - nvim-data:/home/dev/.local/share/nvim
       - nvim-state:/home/dev/.local/state/nvim
+      - nvim-undo:/home/dev/.vim/undodir
 
       # --- secrets / auth, mounted read-only (never baked into the image) ---
       - ${HOME}/.gitconfig:/home/dev/.gitconfig:ro
       - ${HOME}/.ssh:/home/dev/.ssh:ro
       # intelephense license — lsp.lua reads ~/.config/intelephense/license.txt at runtime:
       - ${HOME}/.config/intelephense:/home/dev/.config/intelephense:ro
-      # Optional: share your Copilot auth so you don't re-login (uncomment if it exists on host):
-      # - ${HOME}/.config/github-copilot:/home/dev/.config/github-copilot
 
 volumes:
   nvim-data:
   nvim-state:
+  nvim-undo:
