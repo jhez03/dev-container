@@ -19,6 +19,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ripgrep fd-find tmux xclip locales \
       python3 python3-pip pipx \
     && rm -rf /var/lib/apt/lists/*
+
+# --- Docker CLI (talks to the host/VM daemon via the mounted socket) ----------
+# gosu drops from root to `dev` in entrypoint.sh, after fixing up socket perms.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      docker.io gosu \
+    && rm -rf /var/lib/apt/lists/*
 # UTF-8 locale so nvim/tmux glyphs render correctly
 RUN sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
@@ -65,5 +71,14 @@ RUN mkdir -p /home/${USERNAME}/.local/share/nvim /home/${USERNAME}/.local/state/
 ARG DOTFILES_REF=main
 RUN git clone --depth 1 --branch ${DOTFILES_REF} ${DOTFILES_REPO} /home/${USERNAME}/dotfiles \
     && bash /home/${USERNAME}/dotfiles/install.sh
+
+# --- entrypoint --------------------------------------------------------------
+# Back to root so the container starts as root: entrypoint.sh aligns `dev`
+# with the mounted docker.sock's group (its GID varies by host/VM) before
+# dropping down to `dev` to run the actual command.
+USER root
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 WORKDIR /workspace

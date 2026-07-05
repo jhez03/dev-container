@@ -30,6 +30,11 @@ services:
       # intelephense license — lsp.lua reads ~/.config/intelephense/license.txt at runtime:
       - ${HOME}/.config/intelephense:/home/dev/.config/intelephense:ro
 
+      # --- host/VM docker socket (lets docker CLI in the container see and
+      # control sibling containers on the host — same access level as root
+      # on the host, since anyone who can reach the socket can escape to it) ---
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   nvim-data:
   nvim-state:
