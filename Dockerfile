@@ -12,6 +12,10 @@ ARG NODE_MAJOR=22
 # your host user differs.
 ARG USER_UID=1000
 ARG USER_GID=1000
+# GID of the `docker` group on the host/VM, so `dev` can use the socket
+# mounted in docker-compose.yml. Find yours with `getent group docker`
+# and set DOCKER_GID in .env if it isn't 999.
+ARG DOCKER_GID=999
 
 # --- base tooling --------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,9 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Docker CLI (talks to the host/VM daemon via the mounted socket) ----------
-# gosu drops from root to `dev` in entrypoint.sh, after fixing up socket perms.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      docker.io gosu \
+      docker-cli \
     && rm -rf /var/lib/apt/lists/*
 # UTF-8 locale so nvim/tmux glyphs render correctly
 RUN sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen
@@ -58,6 +61,15 @@ RUN LG_VER=$(curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/relea
 # --- non-root user -------------------------------------------------------------
 RUN groupadd -g ${USER_GID} ${USERNAME} \
     && useradd -u ${USER_UID} -g ${USER_GID} -ms /bin/bash ${USERNAME}
+# Join (or create) the group owning the docker socket so `dev` can use it
+# without needing root. Reuses an existing group at that GID if one exists
+# (e.g. Debian's own `docker` group) instead of clashing with it.
+RUN DOCKER_GROUP=$(getent group ${DOCKER_GID} | cut -d: -f1); \
+    if [ -z "$DOCKER_GROUP" ]; then \
+      groupadd -g ${DOCKER_GID} docker-host; \
+      DOCKER_GROUP=docker-host; \
+    fi; \
+    usermod -aG "$DOCKER_GROUP" ${USERNAME}
 USER ${USERNAME}
 ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 WORKDIR /home/${USERNAME}
@@ -71,14 +83,5 @@ RUN mkdir -p /home/${USERNAME}/.local/share/nvim /home/${USERNAME}/.local/state/
 ARG DOTFILES_REF=main
 RUN git clone --depth 1 --branch ${DOTFILES_REF} ${DOTFILES_REPO} /home/${USERNAME}/dotfiles \
     && bash /home/${USERNAME}/dotfiles/install.sh
-
-# --- entrypoint --------------------------------------------------------------
-# Back to root so the container starts as root: entrypoint.sh aligns `dev`
-# with the mounted docker.sock's group (its GID varies by host/VM) before
-# dropping down to `dev` to run the actual command.
-USER root
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 WORKDIR /workspace
