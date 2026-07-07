@@ -44,9 +44,12 @@ Push to the dotfiles repo, then rebuild. Plugin data lives in a named volume, so
 are fast:
 ```bash
 docker compose build && docker compose up -d
+
 ```
 
 ## Notes / gotchas
+
+- Copying files or folder to the container: docker cp does not work, use tar cf - -C <folder-name> . | docker exec -i dev-container-dev-1 tar xf - -C /workspace
 
 - **Runtimes**: editor-only base (Node included for LSPs/Copilot; Python for djlint).
   `pint` (PHP formatter) is intentionally excluded — add PHP + Composer to the `Dockerfile`
