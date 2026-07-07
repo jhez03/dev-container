@@ -16,7 +16,10 @@ services:
       - COLORTERM=truecolor
     volumes:
       # --- your project code (set PROJECTS_DIR in .env) ---
-      - ${PROJECTS_DIR:-../projects}:/workspace
+      # Mounted into a subfolder, not straight onto /workspace, so a second
+      # folder (e.g. one you `docker cp` in separately) can live alongside it
+      # without sharing this mount's host ownership.
+      - ${PROJECTS_DIR:-../projects}:/workspace/EzHotel
 
       # --- persist Neovim plugins + Mason binaries across rebuilds ---
       - nvim-data:/home/dev/.local/share/nvim
