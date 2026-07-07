@@ -19,7 +19,7 @@ services:
       # Mounted into a subfolder, not straight onto /workspace, so a second
       # folder (e.g. one you `docker cp` in separately) can live alongside it
       # without sharing this mount's host ownership.
-      - ${PROJECTS_DIR:-../projects}:/workspace/EzHotel
+      - ${PROJECTS_DIR:-../projects}:/workspace/Mounted
 
       # --- persist Neovim plugins + Mason binaries across rebuilds ---
       - nvim-data:/home/dev/.local/share/nvim
